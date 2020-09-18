@@ -1,0 +1,71 @@
+<script>
+	
+			getXY:function(e,obj) {
+				  	var obj2 = document.getElementById("canvasId"+this.canvasIndex).getBoundingClientRect();
+				  	obj = Object.assign(obj,obj2);
+			        var et = e.touches? e.touches[0] : e;
+			        var x = et.clientX;
+			        var y = et.clientY;
+			        return {
+			            x : x - obj.offsetLeft + (document.body.scrollLeft || document.documentElement.scrollLeft),
+			            y : y - obj.offsetTop  + (document.body.scrollTop || document.documentElement.scrollTop)
+			        }
+			   },
+			   offset:function(r,d) {//根据弧度与距离计算偏移坐标
+			        return {x: -Math.sin(r)*d, y: Math.cos(r)*d};
+			   },
+			  canvasmousedown:function(e){
+				  this.moveFlag = true;
+			  },
+			  canvasmousemove:function(e){
+				  var ox = 50;
+				  var oy = 50;
+				  var or = 45;
+				  var br = 10;
+				  if (this.moveFlag) {
+			            var k = this.getXY(e,this.tempCanvas);
+			            var tempObj = document.getElementById("canvasId"+this.canvasIndex).getBoundingClientRect();
+			            var r = Math.atan2(k.x-ox-tempObj.x, tempObj.y+oy-k.y);
+			            this.hd = (Math.PI+r)/(2*Math.PI);
+						console.log(this.hd)
+			            // 半圆的滑动范围判断
+			            /* if (this.hd <= 0.75 && this.hd >= 0.25) {
+			                this.draw(this.hd);
+			            } */
+			            this.draw(this.hd);
+			        }
+				  
+			  },
+			  canvasmouseup:function(e){
+				  this.moveFlag = false;
+			  },
+			  draw:function(n) {
+				    if(!this.tempCanvas){
+				    	return;
+				    }
+			    	var ctx = this.tempCanvas.getContext("2d");
+			    	var ox = 50;
+					var oy = 50;
+					var or = 45;
+					var br = 10;
+			        ctx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
+			        ctx.strokeStyle = "#f1f1f1";
+			        ctx.lineWidth = 10;
+			        ctx.beginPath();
+			        ctx.arc(ox,oy,or,0,2*Math.PI,true);
+			        ctx.stroke();
+			        ctx.strokeStyle = "#31A9C1";
+			        ctx.lineWidth = 10;
+			        ctx.beginPath();
+			        ctx.arc(ox,oy,or,0.5*Math.PI,(n*2+0.5)*Math.PI,false);
+			        ctx.stroke();
+			        ctx.beginPath();
+			  },
+			  initCanvas:function(Index){
+				  var that = this;
+				  this.canvasIndex = Index;
+				  this.tempCanvas = document.getElementById("canvasId"+Index);
+				  this.moveFlag = false;
+				  this.draw(this.hd);
+			  },
+</script>

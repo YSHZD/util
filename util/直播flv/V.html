@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style>
+		
+		#my-video{
+			
+		}
+		.videos{
+			position: relative;
+			width: 400px!important;
+			height: 500px!important;
+		}
+		.CatchPictures{
+			position: absolute;
+			bottom: 0;
+			right: 0;
+			width: 40px;
+			height: 40px;
+			display: inline-block;
+			background: #000;
+			color: #fff;
+		}
+	</style>
+</head>
+<body>
+	<script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.js"></script>
+	<script src="./dist/flv.min.js"></script>
+	<div class="content" id="app">
+	  <div class="videos">
+	  	<video id="my-video" style="width:100%;height:100%;"  autoplay muted ></video>
+	  </div>
+      <canvas id="V2I_canvas" style="display: none"></canvas>
+    </div>
+
+</body>
+<script type="text/javascript">
+
+
+	function downLoad(url){
+	    var oA = document.createElement("a");
+	    oA.download = '';// 设置下载的文件名，默认是'下载'
+	    oA.href = url;
+	    document.body.appendChild(oA);
+	    oA.click();
+	    oA.remove(); // 下载之后把创建的元素删除
+	}
+	function saveAsPNG() {
+        var canvas = document.getElementById('V2I_canvas');
+
+        if (!canvas.getContext) {
+            alert("您的浏览器暂不支持canvas");
+            return false;
+        } else {
+            var context = canvas.getContext("2d");
+            var video = document.getElementById("my-video");
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return mySrc = canvas.toDataURL("image/png");
+        }
+    }
+
+
+	var vm = new Vue({
+		 el:'#app',
+		 data() {
+		    return {
+		    	a:123123
+		    }
+		  },
+		  methods: {
+		  	CatchPictures:function(){
+		  		downLoad(saveAsPNG());
+		  	},
+		    startPlay() {
+		      if (flvjs.isSupported()) {
+		        const videoElement = document.getElementById("my-video");
+		        const flvPlayer = flvjs.createPlayer(
+		          {
+		            type: "flv",
+		            isLive: true,
+		            hasAudio: false,
+		            //必须与node搭建的流媒体服务器中的http的端口和推流的参数吻合
+		            url: "http://192.168.0.132:8084/live?port=1935&app=myapp&stream=5678"
+		          },
+		          {
+		            enableStashBuffer: true,
+		            stashInitialSize: 128
+		          }
+		        );
+		        flvPlayer.attachMediaElement(videoElement)
+		        flvPlayer.load()
+		        flvPlayer.play()
+		      } else {
+		        console.log("flvjs不支持")
+		      }
+		    }
+		  },
+		  mounted() {
+		    this.startPlay()
+		  }
+	})
+</script>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style>
+		html,body{
+			padding: 0;
+			margin: 0;
+			height: 100%;
+			background: #EDEDED;
+		}
+		.flex{
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.flex-row{
+			flex-direction: row;
+		}
+		.flex-column{
+			flex-direction: column;
+		}
+		.flexInit{
+			display: flex;
+			justify-content: flex-start;
+			align-items: flex-start;
+		}
+		.flex1{
+			flex: 1;
+		}
+		.menuSide{
+			width: 250px;
+			background: #3C404C;
+			color: #ffffff;
+		}
+		.h100{
+			height: 100%;
+		}
+		.w100{
+			width: 100%;
+		}
+		.leftMenu{
+			list-style: none;
+			padding: 0;
+			margin: 0;
+			margin-top: 40px;
+		}
+		.leftMenu li{
+			height: 40px;
+			line-height: 40px;
+			text-indent: 3em;
+			position: relative;
+		}
+		.leftMenu li:after{
+			content: "";
+			width: 4px;
+			height: 0;
+			background: #61D9AB;
+			position: absolute;
+			top: 100%;
+			right: 0;
+			transition: all .2s;
+		}
+		.leftMenu .menuAtv{
+			color:#61D9AB ;
+		}
+		.leftMenu .menuAtv:after{
+			content: "";
+			width: 4px;
+			height: 40px;
+			background: #61D9AB;
+			position: absolute;
+			top: 0;
+			right: 0;
+		}
+		.topTitle{
+			padding-bottom: 20px;
+			border-bottom: 1px dashed #E3E3E3;
+		}
+		.contentTop{
+			padding: 15px;
+			box-sizing: border-box;
+		}
+		.topTitle strong,.topTitle span{
+			font-size: 16px;
+			font-weight: normal;
+			margin-right:10px;
+			color: #3A3A3A;
+		}
+		.topTitle strong{
+			font-size: 24px;
+			color: #333333;
+		}
+		.content-box{
+			padding: 30px;
+			background: #ffffff;
+			border-radius: 10px;
+		}
+
+		@font-face{
+			font-family: 'led';
+			src: url('./led.ttf');
+			font-style: normal;
+		}
+		.topTitle .leds{
+			font-family: 'led';
+			font-size: 40px;
+			color:#2CB6C1;
+			font-weight: bolder;
+		}
+		.s_before{
+			position: relative;
+			padding-left: 20px;
+		}
+		.s_before:before{
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 50%;
+			height: 12px;
+			margin-top: -6px;
+			border-radius: 50%;
+			background: #333333;
+			width: 12px;
+		}
+		.s_green:before{
+			background:#31CB8F ;
+		}
+		.s_red:before{
+			background:#FC6671 ;
+		}
+		.topTitle .bigFont{
+			font-size: 24px;
+		}
+		.ml20{
+			margin-left: 30px;
+		}
+		.ptb15{
+			padding: 15px 0 ;
+			box-sizing: border-box;
+		}
+		.content-box-bottom{
+			padding: 0 7.5px 15px;
+			box-sizing: border-box;
+		}
+		.box-bottom{
+			padding: 7.5px;
+			box-sizing: border-box;
+			display: inline-block;	
+			height: 300px;
+		}
+		.box-bottom .contents{
+			height: 100%;
+			background: #ffffff;
+			border-radius: 10px;
+			box-sizing: border-box;
+			padding: 15px;
+		}
+	</style>
+</head>
+<body >
+	<div class="flex h100" id="app">
+		<div class="menuSide h100">
+			<ul class="leftMenu">
+				<li v-for="(item,index) in menulist" :key="index" :class="index == menuCurrentIndex?'menuAtv':''" @click="changeMenuCurrentIndex(index)">
+					{{item.label}}
+				</li>
+			</ul>
+		</div>
+		<div class="flex1 h100 flex flex-column">
+			<div class="contentTop w100">
+				<div class="content-box">
+					<div class="topTitle">
+						<span class="bigFont">检测设备总数 </span>
+						<strong class="leds">15</strong>
+						<span class="ml20">普通摄像头</span>
+						<strong >2</strong>
+						<span>智能摄像头</span>
+						<strong>12</strong>
+						<span class="s_before s_green ml20">设置正常数</span>
+						<strong>2</strong>
+						<span class="s_before s_red">设备掉线数</span>
+						<strong>12</strong>
+					</div>
+					<div class="ptb15">
+						<div class="content_box">12321</div>
+					</div>
+				</div>
+			</div>
+			<div class="flex1 w100 content-box-bottom">
+				<div class="box-bottom" :style="{'width':boxWidth+'px'}">
+					<div class="contents" >
+						123
+					</div>
+				</div>
+				
+				<div class="box-bottom" :style="{'width':boxWidth+'px'}">
+					<div class="contents" >
+						123
+					</div>
+				</div>
+				<div class="box-bottom" :style="{'width':boxWidth+'px'}">
+					<div class="contents" >
+						123
+					</div>
+				</div>
+				<div class="box-bottom" :style="{'width':boxWidth+'px'}">
+					<div class="contents" >
+						123
+					</div>
+				</div>
+				
+				<div class="box-bottom" :style="{'width':boxWidth+'px'}">
+					<div class="contents" >
+						123
+					</div>
+				</div>
+				<div class="box-bottom" :style="{'width':boxWidth+'px'}">
+					<div class="contents" >
+						123
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+
+</body>
+<script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.js"></script>
+<script type="text/javascript">
+	var vm = new Vue({
+		 el:'#app',
+		 data() {
+		    return {
+		    	menuCurrentIndex:0,
+		    	menulist:[
+		    		{
+		    			label:'视频设备'
+		    		},{
+		    			label:'环监设备'
+		    		}
+		    	]
+		    }
+		  },
+		  computed:{
+		  	 boxWidth:function(){
+		  	 	var maxWidth = document.getElementsByClassName('content-box-bottom')[0].getBoundingClientRect().width;
+		  	 	return Math.floor((maxWidth - 15)/6) -4;
+		  	 }
+		  },
+		  methods: {
+		  	changeMenuCurrentIndex:function(index){
+		  		this.menuCurrentIndex = index;
+		  	}
+		  },
+		  mounted() {
+
+		    
+		  }
+	})
+</script>
+</html>

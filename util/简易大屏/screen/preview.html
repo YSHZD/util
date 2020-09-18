@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="css/favicon.ico">
+    <link type="text/css" rel="styleSheet" href="css/elementui.css"/>
+    <link type="text/css" rel="styleSheet" href="css/swiper.min.css"/>
+    <link type="text/css" rel="styleSheet" href="css/style.css"/>
+    <title></title>
+    <style>
+      .s_box{
+        position: relative;
+      }
+      .swiper-container{
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        top: 6px;
+        bottom: 6px;
+      }
+    </style>
+  </head>
+  <body >
+    <div 
+    class="s_app  flex flex-row" 
+    id="app" 
+    v-cloak 
+    :style="{'background-color':bgColor?bgColor:'#1a2749','padding':boxPadding?boxPadding/2+'px':'5px'}"
+    >
+      <div  class="flex1 flex flex-column h100" v-for="(item,index) in setNums" :key="index" :style="{'flex': item.halve}">
+        <div v-if="setNums.length" class="flex  w100" v-for="(item,index) in item.children" :key="index" :style="{'flex': item.halve}">
+          <div 
+          class="s_item pv" 
+          :style="{'padding':boxPadding?boxPadding/2+'px':'5px'}"
+          >
+              <div 
+              :id="item.id" 
+              class="s_box" 
+              @click="bdData(item.id)" 
+              :style="{'border-color':brColor?brColor:'#15EDCE','border-radius':brRadius+'px','background-color':boxColor?boxColor:'#1a2749','box-shadow':boxShadow?boxShadow:'initial'}">
+                <span class="tbadd">暂无数据</span>
+              </div>
+          </div>
+        </div>
+      </div>  
+    </div>
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <script src="js/echarts.js"></script>
+    <script src="maps/china.js"></script>
+    <script src="js/dark.js"></script>
+    <script src="js/common.js"></script>
+    <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.js"></script>
+    <script type="text/javascript" src="js/elementui.js"></script>
+    <script type="text/javascript" src="js/swiper.min.js"></script>
+
+    <script>
+      new Vue({
+        el:'#app',
+        data(){
+          return {
+            brRadius:0,
+            bgColor:'',
+            brColor:'',
+            boxColor:'',
+            setNums:[],
+            setDatas:[],
+            boxPadding:5,
+            boxShadow:'',
+            fontColor:''
+          }
+        },
+        created(){
+
+        },
+        mounted(){
+          var that = this;
+          var obj = JSON.parse(localStorage.getItem('datas'));
+          if(obj){
+            this.brRadius = obj.brRadius;
+            this.bgColor = obj.bgColor;
+            this.brColor = obj.brColor;
+            this.setNums = obj.setNums;
+            this.setDatas = obj.setDatas;
+            this.boxColor = obj.boxColor;
+            this.boxPadding = obj.boxPadding;
+            this.boxShadow = obj.boxShadow ;
+            this.fontColor = obj.fontColor;
+            this.grid = obj.grid;
+            this.$nextTick(function(){
+              that.setDatas.forEach(function(item){
+                 window[item.funName](item.id,item.data,{
+                  'boxColor':that.boxColor,
+                  'fontColor':that.fontColor,
+                  'grid':that.grid
+                });
+              })
+            })
+            
+          }
+        },
+        watch:{
+          
+        },
+        methods:{
+        }
+      })
+    </script>
+  </body>
+</html>

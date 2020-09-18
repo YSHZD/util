@@ -1,0 +1,21 @@
+window.addEventListener("storage", function (e) {
+        alert(e.newValue);
+});
+
+
+
+
+
+
+
+var orignalSetItem = localStorage.setItem;
+localStorage.setItem = function(key,newValue){
+      var setItemEvent = new Event("setItemEvent");
+      setItemEvent.newValue = newValue;
+      window.dispatchEvent(setItemEvent);
+      orignalSetItem.apply(this,arguments);
+}
+window.addEventListener("setItemEvent", function (e) {
+    alert(e.newValue);
+});
+localStorage.setItem("name","wang");
