@@ -1,0 +1,144 @@
+遇事耐心，不急不躁，虽然这不是成功的唯一要素，但它是你技术路上长远走下去的基础
+比如H5端的浏览器有跨域限制：1.前端代码和后端接口部署在同域的web服务器上；2.由后台服务器配置策略，设为允许跨域访问
+H5端调试是跨域：1.使用HBuilderX内置浏览器，内置浏览器经过官方处理，不存在跨域问题，简单易用，推荐使用。（需HBuilderX 2.6以上）；2.配置webpack-dev-server代理;3.给浏览器安装跨域插件，禁止浏览器报跨域，Chrome插件名称：Allow-Control-Allow-Origin: 
+
+比如微信小程序会强制要求https链接，并且所有要联网的服务器域名都要配到微信的白名单中；
+比如App端，iOS对隐私控制和虚拟支付控制非常严格；
+比如App端，Android、国产rom各种兼容性差异，尤其是因为谷歌服务被墙，导致的push、定位等开发混乱的坑；
+如果你的App要使用三方sdk，比如定位、地图、支付、推送...还要遵循他们的规则和限制；
+js文件不支持使用/开头的方式引入
+@开头的绝对路径以及相对路径会经过base64转换规则校验
+不支持本地图片的平台，小于40kb，一定会转base64。（共四个平台mp-weixin, mp-qq, mp-toutiao, app v2）；图片大于等于 40kb，会有性能问题，不建议使用太大的背景图，如开发者必须使用，则需自己将其转换为 base64 格式使用，或将其挪到服务器上，从网络地址引用；本地背景图片的引用路径推荐使用以 ~@ 开头的绝对路径；微信小程序不支持相对路径（真机不支持，开发工具支持）
+应用生命周期仅可在App.vue中监听，在其它页面监听无效
+在HBuilderX 1.9.9+版本以前，在onlaunch生命周期内进行页面的跳转，需要注意：可能会和pages.json内配置的第一个页面跳转时机冲突。
+造成的错误是手机端页面白屏
+如果想在App端实现点击某个tabitem不跳转页面，不能使用onTabItemTap，可以使用plus.nativeObj.view放一个区块盖住原先的tabitem，并拦截点击事件
+var view = null;
+    // 创建原生View控件
+    function createView() {
+        view = new plus.nativeObj.View('test', {
+            bottom: '0px',
+            left: '0px',
+            height: '60px',
+            width: '100%'
+        });
+        // 绘制文本
+        view.drawText('', {}, {
+            size: '24px',
+            color: '#FF0000',
+            backgroundColor: '#FFFFFF'
+        });
+        view.show();
+    }
+    // View控件事件监听器，其实默认拦截处理触屏事件，不加一下代码也可以
+    function addEventView() {
+        view.addEventListener("click", onClick, false);
+    }
+    // 监听事件函数
+    function onClick(e) {
+        console.log("点击原生控件：" + JSON.stringify(e));
+    }
+避免在 onShow 里使用需要权限的 API（比如 setScreenBrightness() 等需要手机权限）, 可能会再次触发onShow造成死循环
+App端，在 pages.json 里的 titleNView 或页面里写的 plus api 中涉及的单位，只支持 px。注意此时不支持 rpx
+rpx不支持动态横竖屏切换计算，使用rpx建议锁定屏幕方向
+早期 uni-app 提供了 upx ，目前已经推荐统一改为 rpx 了
+使用@import语句可以导入外联样式表，@import后跟需要导入的外联样式表的相对路径，用;表示语句结束
+尽量避免将静态的样式写进 style 中，以免影响渲染速度；在 uni-app 中不能使用 * 选择器；page 相当于 body 节点；微信小程序自定义组件中仅支持 class 选择器
+::after  ::before在 view 组件后边插入内容，仅微信小程序和App生效
+定义在 App.vue 中的样式为全局样式，作用于每一个页面。在 pages 目录下 的 vue 文件中定义的样式为局部样式，只作用在对应的页面，并会覆盖 App.vue 中相同的选择器；App.vue 中通过 @import 语句可以导入外联样式，一样作用于每一个页面；nvue页面暂不支持全局样式
+var(--status-bar-height) 此变量在微信小程序环境为固定 25px，在 App 里为手机实际状态栏高度 ；由于在H5端，不存在原生导航栏和tabbar，也是前端div模拟。如果设置了一个固定位置的居底view，在小程序和App端是在tabbar上方，但在H5端会与tabbar重叠。此时可使用--window-bottom，不管在哪个端，都是固定在tabbar上方
+.status_bar { height: var(--status-bar-height); width: 100%; }
+bottom: calc(var(--window-bottom) + 10px)
+小程序不支持在css中使用本地文件，包括本地的背景图和字体文件。需以base64方式方可使用。App端在v3模式以前，也有相同限制。v3编译模式起支持直接使用本地背景图和字体
+App端Android支持不依赖Android版本号，即便是Android4.4也是上表数据。因为uni-app的js代码运行在自带的独立jscore中，没有js的浏览器兼容性问题。uni-app的vue页面在Android低端机上只有css浏览器兼容性问题，因为vue页面仍然渲染在webview中，受Android版本影响，太新的css语法在低版本不支持
+为多端兼容考虑，建议优先从 uni-app插件市场 获取插件。直接从 npm 下载库很容易只兼容H5端
+非 H5 端不支持使用含有 dom、window 等操作的 vue 组件和 js 模块，安装的模块及其依赖的模块使用的 API 必须是 uni-app 已有的 API（兼容小程序 API），比如：支持高德地图微信小程序 SDK。类似jQuery 等库只能用于H5端
+声明 lang="ts" 后，该 vue 文件 import 进来的所有 vue 组件，均需要使用 ts 编写
+2.5.0+版本支持在pages.json内引入组件：easycom（传统vue组件，需要安装、引用、注册，三个步骤后才能使用组件。easycom将其精简为一步。 只要组件安装在项目的components目录下，并符合components/组件名称/组件名称.vue目录结构。就可以不用引用、注册，直接在页面中使用）
+"easycom": { 
+"autoscan": true, 
+"custom": { 
+"^uni-(.*)": "@/components/uni-$1.vue", // 匹配components目录内的vue文件 "^vue-file-(.*)": "packageName/path/to/vue-file-$1.vue" // 匹配node_modules内的vue文件 
+} 
+}
+小程序组件需要放在项目特殊文件夹 wxcomponents（或 mycomponents、swancomponents）；小程序组件的性能，不如vue组件。使用小程序组件，需要自己手动setData，很难自动管理差量数据更新。而使用vue组件会自动diff更新差量数据。所以如无明显必要，建议使用vue组件而不是小程序组件。比如某些小程序ui组件，完全可以用更高性能的uni ui替代；当需要在 vue 组件中使用小程序组件时，注意在 pages.json 的 globalStyle 中配置 usingComponents，而不是页面级配置；在 pages.json 对应页面的 style -> usingComponents 引入组件
+{ "pages":
+ [{ 
+"path": "index/index", 
+"style": { 
+"usingComponents": { 
+// #ifdef APP-PLUS || MP-WEIXIN || MP-QQ
+ "custom": "/wxcomponents/custom/index"
+ // #endif // #ifdef MP-BAIDU 
+"custom": "/swancomponents/custom/index" 
+// #endif // #ifdef MP-ALIPAY
+ "custom": "/mycomponents/custom/index" 
+// #endif } } 
+} ] }
+在页面中使用 <custom name="uni-app"></custom>
+uni-app 在发布到H5时支持所有vue的语法；发布到App和小程序时，由于平台限制，无法实现全部vue语法：非H5端不支持 Vue官方文档：Class 与 Style 绑定 中的 classObject 和 styleObject 语法
+在H5平台 使用 v-for 循环整数时和其他平台存在差异，如 v-for="(item, index) in 10" 中，在H5平台 item 从 1 开始，其他平台 item 从 0 开始，可使用第二个参数 index 来保持一致
+在非H5平台 循环对象时不支持第三个参数，如 v-for="(value, name, index) in object" 中，index 参数是不支持的
+小程序端数据为差量更新方式，由于小程序不支持删除对象属性，使用的设置值为 null 的方式替代，导致遍历时可能出现不符合预期的情况，需要自行过滤一下值为 null 的数据
+为兼容各端，事件需使用 v-on 或 @ 的方式绑定，请勿使用小程序端的bind 和 catch 进行事件绑定
+若需要禁止蒙版下的页面滚动，可使用 @touchmove.stop.prevent="moveHandle"，moveHandle 可以用来处理 touchmove 的事件，也可以是一个空函数。
+.stop：各平台均支持， 使用时会阻止事件冒泡，在非 H5 端同时也会阻止事件的默认行为
+.prevent 仅在 H5 平台支持
+.self：仅在 H5 平台支持
+.once：仅在 H5 平台支持
+.capture：仅在 H5 平台支持
+.passive：仅在 H5 平台支持
+H5 的select 标签用 picker 组件进行代替
+App端（vue页面V3编译模式）和H5端支持v-html，其他端不支持v-html
+uni-app只支持vue单文件组件（.vue 组件）。其他的诸如：动态组件，自定义 render，和<script type="text/x-template"> 字符串模版等，在非H5端不支持
+详细的小程序端不支持列表：
+1．作用域插槽（字节小程序不支持、除支付宝小程序外仅支持解构插槽、不可使用作用域外数据）
+2．动态组件
+3．异步组件
+4．inline-template
+5．X-Templates
+6．keep-alive
+7．transition （可使用 animation 或 CSS 动画替代）
+8．老的非自定义组件编译模式不支持在组件引用时，在组件上定义 click 等原生事件、v-show（可用 v-if 代替）和 class style 等样式属性(例：<card class="class-name"> </card> 样式是不会生效的)。建议更新为自定义组件模式
+9．老的非自定义组件编译模式组件里使用 slot 嵌套的其他组件时不支持 v-for。建议更新为自定义组件模式
+uni-app 支持配置全局组件，需在 main.js 里进行全局注册，注册后就可在所有页面里使用该组件（nvue页面暂不支持全局组件）
+在 onLoad 里得到，onLoad 的参数是其他页面打开当前页面所传递的数据
+设置全局的数据和全局的方法：uni-app 内置了 vuex ，在app里的使用；
+只有 app 才会有 onLaunch 的生命周期
+组件属性设置不生效解决办法：当重复设置某些属性为相同的值时，不会同步到view层。 例如：每次将scroll-view组件的scroll-top属性值设置为0，只有第一次能顺利返回顶部。 这和props的单向数据流特性有关，组件内部scroll-top的实际值改动后，其绑定的属性并不会一同变化：1.监听事件，记录组件内部变化的值，在设置新值之前先设置为记录的当前值；2.监听事件，获取组件内部变化的值，实时更新其绑定值（增加防抖处理）
+Vue.nextTick、vm.$el、v-cloak、transition仅H5支持；Vue.directive、is微信小程序不支持...
+在App端，如果使用vue页面，则使用webview渲染；如果使用nvue页面(native vue的缩写)，则使用原生渲染
+nvue也可以多端编译，输出H5和小程序，但nvue的css写法受限，所以如果你不开发App，那么不需要使用nvue
+nvue的css仅支持flex布局，是webview的css语法的子集。这是因为操作系统原生排版不支持非flex之外的web布局
+nvue的css，在选择器方面支持的较少，只支持简单的class="classA"；class 进行绑定时只支持数组语法；web的css属性在nvue里无法支持，比如背景图；
+如果熟悉 weex或react native 开发，那么 nvue 是你的更优选择，能切实提升你的开发效率，降低成本；如果是web前端，不熟悉原生排版，那么建议你仍然以使用vue页面为主，在App端某些vue页面表现不佳的场景下使用 nvue 作为强化补充
+如需要将软键盘右下角按钮文字改为“发送”，则需要使用nvue。比如聊天场景，除了软键盘右下角的按钮文字处理外，还涉及聊天记录区域长列表滚动，适合nvue来做
+解决前端控件无法覆盖原生控件的层级问题。当你使用map、video、live-pusher等原生组件时，会发现前端写的view等组件无法覆盖原生组件，层级问题处理比较麻烦，此时使用nvue更好。或者在vue页面上也可以覆盖一个subnvue（一种非全屏的nvue页面覆盖在webview上），以解决App上的原生控件层级问题
+如深度使用map组件，建议使用nvue。除了层级问题，App端nvue文件的map功能更完善，和小程序拉齐度更高，多端一致性更好
+如深度使用video，建议使用nvue。比如如下2个场景：video内嵌到swiper中，以实现抖音式视频滑动切换，例子见插件市场；nvue的视频全屏后，通过cover-view实现内容覆盖，比如增加文字标题、分享按钮
+对App启动速度要求极致化。App端v3编译器模式下，如果首页使用nvue且在manifest里配置fast模式，那么App的启动速度可以控制在1秒左右。而使用vue页面的话，App的启动速度一般是3秒起，取决于你的代码性能和体积
+canvas。nvue的canvas性能不高，尤其是Android App平台，所以这个组件干脆没有内置，而是需要单独引入。操作canvas动画，最高性能的方式是使用vue页面的renderjs技术
+动态横竖屏。nvue页面的css不支持媒体查询，所以横竖屏动态切换、动态适配屏幕是很困难的
+在HBuilderX中新建页面是会自动注册pages.json里
+小程序及 H5 等平台是没有 HTML5+ 扩展规范的,需要注意使用条件编译。否则运行到h5、小程序等平台会出现 plus is not
+在 HBuilderX 中开发 uni-app 时，通过输入 ifdef 可快速生成条件编译的代码片段
+非H5端不支持*选择器;vue页面在App端，默认是被系统的webview渲染的（不是手机自带浏览器，是rom的webview），在较老的手机上，比如Android4.4、5.0或iOS8，很多css是不支持的，所以不要使用太新的css，会导致界面异常
+小程序不存在浏览器兼容问题，它自带了一个很大的Webview。所以如果你的H5和小程序界面正常，而Android低端机App界面异常，且App没有使用x5引擎，那基本就可以判定是因为css兼容性
+app端nvue页面，不存在浏览器兼容问题，它自带一个统一的原生渲染引擎，不依赖webview
+原生组件层级问题 H5没有原生组件概念问题，非H5端有原生组件并引发了原生组件层级高于前端组件的概念，要遮挡video、map等原生组件，请使用cover-view组件
+H5正常但小程序异常的可能性:小程序要求连接的网址都要配白名单;小程序不支持组件比例v-html
+H5和小程序界面正常，而App界面异常:大多是因为css兼容性(从 uni-app 2.5.3 起，Android端支持引入腾讯x5浏览器内核)
+小程序或App正常，但H5异常的可能性: App特有的API和功能，比如plus、Native.js、subNVue、原生插件等;使用了小程序专用的功能，比如微信卡卷、小程序插件、微信小程序云开发。对于云开发，建议使用可跨端的uniCloud
+data 属性必须声明为返回一个初始数据对象的函数；否则页面关闭时，数据不会自动销毁，再次打开该页面时，会显示上次数据
+非H5端，不能使用浏览器自带对象，比如document、window、localstorage、cookie等，更不能使用jquery等依赖这些浏览器对象的框架
+App端若要使用操作window、document的库，需要通过renderjs来实现
+H5开发组件内（页面除外）不支持 onLoad、onShow 等页面生命周期
+
+微信小程序：目前小程序分包大小有以下限制整个小程序所有分包大小不超过 16M；单个分包/主包大小不能超过 2M
+
+
+
+
+
+
+
