@@ -1,0 +1,35 @@
+1.谷歌浏览器：以前是Webkit内核，现在是Blink内核。
+
+2.火狐浏览器：Gecko内核，俗称Firefox内核。
+
+3.欧鹏浏览器：最初是自己的Presto内核，后来是Webkit，现在是Blink内核。
+
+4.苹果浏览器：Webkit内核。
+
+5.IE浏览器：IE4以上版本都是Trident内核。
+
+6.搜狗浏览器：兼容模式（IE：Trident）和高速模式（webkit） 。
+
+7.傲游浏览器：兼容模式（IE：Trident）和高速模式（webkit） 。
+
+8.QQ浏览器：普通模式（IE：Trident）和极速模式（webkit）。
+
+9.360极速浏览器：兼容模式（IE：Trident）+极速模式（Chrome：Blink）。
+
+10.360安全浏览器：兼容模式（IE：Trident）+极速模式（Chrome：Blink）。
+
+11.2345浏览器：兼容模式（IE：Trident）+极速模式（Chrome：Blink）。
+
+12.百度浏览器：IE内核。
+
+13.世界之窗：IE内核
+
+1、IE浏览器内核：Trident内核，也是俗称的IE内核；
+2、Chrome浏览器内核：统称为Chromium内核或Chrome内核，以前是Webkit内核，现在是Blink内核；
+3、Firefox浏览器内核：Gecko内核，俗称Firefox内核；
+4、Safari浏览器内核：Webkit内核；
+5、Opera浏览器内核：最初是自己的Presto内核，后来是Webkit，现在是Blink内核；
+6、360浏览器、猎豹浏览器内核：IE+Chrome双内核；
+7、搜狗、遨游、QQ浏览器内核：Trident（兼容模式）+Webkit（高速模式）；
+8、百度浏览器、世界之窗内核：IE内核；
+9、2345浏览器内核：以前是IE内核，现在也是IE+Chrome双内核；
