@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <style>
+    
+    .manager_detail {
+  width: 100%;
+  height: calc(100vh - 112px);
+  overflow: hidden;
+}
+  </style>
+</head>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/0.10.0/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/fabric.js/4.2.0/fabric.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+<body>
+<div id="app">
+    <div class="manager_detail">
+      <canvas id="canvas" ></canvas>
+    </div>
+
+    <button onclick="Addpolygon()">Add Polygon Points</button>
+    <button onclick="done()">完成</button>
+    <button onclick="doneimg()">点击小图标</button>
+    <button onclick="doitem()">打点</button>
+    <button id="del" onclick="dodel()">删除</button>
+     <button id="del" onclick="doedit()">编辑图标</button>
+</div>
+</body>
+<script>
+
+  var canvas;
+  var polygonCount = 1;
+  var startDrawingPolygon;
+  var startPointer;
+  var ArrayLength;
+  var circleCount = 1;
+  var circleArr = [];
+  var fillColor = "rgba(255, 0, 0, 0.3)";
+  var panning = false;
+  var min = 99;
+  var max = 999999;
+  var delable = false;
+  var editable = false;
+
+  function doedit(){
+    editable = !editable;
+
+  }
+  function dodel(){
+    delable = !delable;
+    if(delable){
+      document.getElementById('del').innerHTML = '完成删除';
+      
+    }else{
+       document.getElementById('del').innerHTML = '删除';
+    }
+  }
+  function initCanvas(src,obj) {
+      var _that = this;
+      var canvasel = document.getElementById('canvas');
+      canvasel.width = obj.width;
+      canvasel.height = obj.height;
+      fabric.Object.prototype.setControlsVisibility({
+        bl: false, // 左下
+        br: false, // 右下
+        mb: false, // 下中
+        ml: false, // 中左
+        mr: false, // 中右
+        mt: false, // 上中
+        tl: false, // 上左
+        tr: false, // 上右
+        mtr: false // 旋转控制键
+    })
+
+      canvas = new fabric.Canvas("canvas",{preserveObjectStacking:true});
+
+      
+
+
+      canvas.setBackgroundImage(
+       src,
+        canvas.renderAll.bind(canvas),
+        {
+          scaleX: canvas.width / obj.width,
+          scaleY: canvas.height / obj.height
+        }
+      );
+
+      canvas.on("mouse:up", function(e) {
+        panning = false;
+        canvas.selection = true;
+      });
+
+   canvas.on('mouse:move', function(option) {
+        if(editable){
+          return;
+        }
+        if (  !startPointer && panning && option && option.e) {
+          var delta = new fabric.Point(option.e.movementX, option.e.movementY);
+          canvas.relativePan(delta);
+        }else{
+           var object = option.target;
+            canvas.forEachObject(function(obj) {
+              if (obj.name == "Polygon") {
+                if (object && obj.PolygonNumber == object.polygonNo) {
+                  var points = window["polygon" + object.polygonNo].get("points");
+                  points[object.circleNo - 1].x = object.left;
+                  points[object.circleNo - 1].y = object.top;
+                  window["polygon" + object.polygonNo].set({
+                    points: points
+                  });
+                }
+              }
+            })
+        }
+        canvas.renderAll();
+      });
+
+      canvas.on('mouse:down', function(option) {
+        console.log(option)
+        if(delable){
+          canvas.remove(option.target)
+          return;
+        }
+        if(panning){
+          panning = false;
+          canvas.selection = true;
+        }
+        panning = true;
+        canvas.selection = false;
+        if(option && option.absolutePointer.x > 0 && option.absolutePointer.y > 0 && option.absolutePointer.x <= obj.width && option.absolutePointer.y <= obj.height){
+              if (startDrawingPolygon  && !startPointer) {
+                var random = Math.floor(Math.random() * (max - min + 1)) + min;
+                var id = new Date().getTime() + random;
+                var pointer = canvas.getPointer(option.e);
+                circle = new fabric.Circle({
+                  left: pointer.x,
+                  top: pointer.y,
+                  radius: 3,
+                  /*stroke: '#333333',
+                  strokeWidth: 0.5,*/
+                  hasBorders: false,
+                  hasControls: false,
+                  polygonNo: polygonCount,
+                  name: "draggableCircle",
+                  circleNo: circleCount,
+                  fill: "rgba(0, 0, 0, 0.2)",
+                  hasRotatingPoint: false,
+                  originX: 'center',
+                  originY: 'center',
+                  id:id
+                });
+                canvas.add(circle);
+                circleArr.push(circle)
+                circleCount++;
+              }
+              if (!startDrawingPolygon  && startPointer) {
+                var random = Math.floor(Math.random() * (max - min + 1)) + min;
+                var id = new Date().getTime() + random;
+                var pointer = canvas.getPointer(option.e);
+                circle = new fabric.Circle({
+                  left: pointer.x,
+                  top: pointer.y,
+                  radius: 7,
+                  selectable: true,
+                  name: "pointerCircle",
+                  fill: "red",
+                  objectCaching: false,
+                  id:id
+                });
+                canvas.add(circle);
+              }
+        }
+        
+      });
+/*      canvas.on({
+        'object:moving': onChange,
+        'object:scaling': onChange,
+        'object:rotating': onChange,
+        'object:selected': onChange,
+        
+      });
+
+      function onChange(options) {
+        console.log(options)
+         var obj = options.target;
+    console.log(obj.id)
+      if (obj.name === 'Polygon' || obj.name === 'pointerCircle' ) {
+        canvas.sendToBack(obj)
+      } else {
+        canvas.bringToFront(obj)
+      }
+      }*/
+
+      canvas.on("mouse:wheel", function(e) {
+        var zoom = (event.deltaY > 0 ? -0.1 : 0.1) + canvas.getZoom();
+        zoom = Math.max(0.1, zoom); //最小为原来的1/10
+        zoom = Math.min(3, zoom); //最大是原来的3倍
+        var zoomPoint = new fabric.Point(event.pageX, event.pageY);
+        console.log(zoom)
+        canvas.zoomToPoint(zoomPoint, zoom);
+      });
+
+  }
+
+
+  
+  function getwh(src,callback){
+    var imgobj = new Image();
+      imgobj.onload = function(e){
+        callback({
+          width:this.width,
+          height:this.height
+        })
+      }
+      imgobj.src = src;
+  }
+  getwh( "1.jpg",function(obj){
+    initCanvas("1.jpg",obj)
+  })
+   function doitem(){
+         startPointer = true;
+   }
+  function doneimg(){
+    fabric.Image.fromURL('./1.jpg', (img) => {
+                    img.scale(0.05).set({
+                        left: 150,
+                        top: 150,
+                        angle: -15,
+                        lockMovementX: true,
+                        lockMovementY: true,
+                        selectable: false
+                    });
+                    canvas.add(img);
+                });
+  }
+  function done() {
+    if(startPointer){
+      startPointer = !startPointer;
+      return;
+    }
+    ArrayLength = circleCount;
+    circleCount = 1;
+    var tempCount = 0;
+    var objects = canvas.getObjects();
+    var points = [];
+    for (var i = 0; objects.length > i; i++) {
+      if (objects[i].polygonNo === polygonCount) {
+        points.push({
+          x: objects[i].left,
+          y: objects[i].top
+        });
+        canvas.renderAll();
+      }
+    }
+
+    if(points.length < 3){
+      alert('最小3个')
+      return;
+    }
+    startDrawingPolygon = false;
+
+    window["polygon" + polygonCount] = new fabric.Polygon(points, {
+      fill: fillColor,
+      PolygonNumber: polygonCount,
+      name: "Polygon",
+      selectable: true,
+     /* noofcircles: ArrayLength,*/
+      objectCaching: false
+    });
+    canvas.add(window["polygon" + polygonCount]);
+    canvas.sendToBack(window["polygon" + polygonCount])
+    circleArr.forEach(function(item){
+      canvas.remove(item)
+    })
+    canvas.renderAll();
+    polygonCount++;
+}
+function Addpolygon() {
+  startDrawingPolygon = true;
+}
+
+
+$('#xx').click(function() {
+        polygon.drawPolygon(); 
+    });
+</script>
+</html>

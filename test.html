@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style>
+		
+		.manager_detail {
+  width: 100%;
+  height: calc(100vh - 112px);
+  overflow: hidden;
+}
+	</style>
+</head>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/0.10.0/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/fabric.js/4.2.0/fabric.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+<body>
+<div id="app">
+    <div class="manager_detail">
+      <canvas id="canvas" width="1720" height="1050"></canvas>
+    </div>
+    <button id="xx">x</button>
+</div>
+</body>
+<script>
+	var min = 99;
+	var max = 999999;
+	var polygonMode = true;
+	var pointArray = new Array();
+	var activeShape = false;
+	var panning = false;
+	var canvas = null;
+	var editable = false;
+	function getwh(src,callback){
+	  var imgobj = new Image();
+      imgobj.onload = function(e){
+      	callback({
+      		width:this.width,
+      		height:this.height
+      	})
+      }
+      imgobj.src = src;
+	}
+	getwh( "1.jpg",function(obj){
+		initCanvas("1.jpg",obj)
+	})
+	function initCanvas(src,obj) {
+              var pointers = [];
+		      var _that = this;
+		      var canvasel = document.getElementById('canvas');
+		      canvasel.width = obj.width;
+		      canvasel.height = obj.height;
+		      canvas = new fabric.Canvas("canvas");
+		      canvas.setBackgroundImage(
+		       src,
+		        canvas.renderAll.bind(canvas),
+		        {
+		          scaleX: canvas.width / obj.width,
+		          scaleY: canvas.height / obj.height
+		        }
+		      );
+		      canvas.on("mouse:down", function(e) {
+		      	console.log(e)
+		      	if(editable && e && e.absolutePointer.x > 0 && e.absolutePointer.y > 0 && e.absolutePointer.x <= obj.width && e.absolutePointer.y <= obj.height){
+		      			if(e.target && e.target.id == pointArray[0].id){
+			                polygon.generatePolygon(pointArray);
+			            }
+			            if(polygonMode){
+			                polygon.addPoint(e);
+			            }
+		      	}
+
+		      	if(panning){
+		      		panning = false;
+		      		canvas.selection = true;
+		      	}
+		      	
+		        panning = true;
+		        canvas.selection = false;
+		      });
+		      canvas.on("mouse:up", function(e) {
+		        panning = false;
+		        canvas.selection = true;
+		      });
+		     /* canvas.on("mouse:move", function(e) {
+		        if (panning && e && e.e) {
+		          var delta = new fabric.Point(e.e.movementX, e.e.movementY);
+		          canvas.relativePan(delta);
+		        }
+
+	            canvas.renderAll();
+
+		      });*/
+		      canvas.on("mouse:wheel", function(e) {
+		        var zoom = (event.deltaY > 0 ? -0.1 : 0.1) + canvas.getZoom();
+		        zoom = Math.max(0.1, zoom); //最小为原来的1/10
+		        zoom = Math.min(3, zoom); //最大是原来的3倍
+		        var zoomPoint = new fabric.Point(event.pageX, event.pageY);
+		        console.log(zoom)
+		        canvas.zoomToPoint(zoomPoint, zoom);
+		      });
+	}
+var polygon = {
+    drawPolygon : function() {
+        polygonMode = true;
+        pointArray = new Array();
+    },
+    addPoint : function(options) {
+        var random = Math.floor(Math.random() * (max - min + 1)) + min;
+        var id = new Date().getTime() + random;
+        var circle = new fabric.Circle({
+            radius: 5,
+            fill: '#ffffff',
+            stroke: '#333333',
+            strokeWidth: 0.5,
+            left: options.absolutePointer.x,
+            top: options.absolutePointer.y,
+            selectable: false,
+            hasBorders: false,
+            hasControls: false,
+            originX:'center',
+            originY:'center',
+            id:id
+        });
+        if(pointArray.length == 0){
+            circle.set({
+                fill:'#04A1E9'
+            })
+        }
+       
+        if(activeShape){
+
+            var pos = canvas.getPointer(options.e);
+
+            var points = activeShape.get("points");
+            points.push({
+                x: pos.x,
+                y: pos.y
+            });
+            var polygon = new fabric.Polygon(points,{
+                stroke:'red',
+                strokeWidth:1,
+                fill: '#cccccc',
+                opacity: 0.3,
+                selectable: false,
+                hasBorders: false,
+                hasControls: false,
+                evented: false
+            });
+            canvas.remove(activeShape);
+            canvas.add(polygon);
+            activeShape = polygon;
+            canvas.renderAll();
+        }
+        else{
+            var polyPoint = [
+            {
+            	x:(options.absolutePointer.x),
+            	y:(options.absolutePointer.y)
+            }];
+            var polygon = new fabric.Polygon(polyPoint,{
+                stroke:'blue',
+                strokeWidth:1,
+                fill: '#cccccc',
+                opacity: 0.3,
+                selectable: false,
+                hasBorders: false,
+                hasControls: false,
+                evented: false
+            });
+            activeShape = polygon;
+            canvas.add(polygon);
+        }
+
+
+        pointArray.push(circle);
+        canvas.add(circle);
+        canvas.selection = false;
+    },
+    generatePolygon : function(pointArray){
+        var points = new Array();
+        $.each(pointArray,function(index,point){
+            points.push({
+                x:point.left,
+                y:point.top
+            });
+            canvas.remove(point);
+        });
+        var polygon = new fabric.Polygon(points,{
+            stroke:'#333333',
+            strokeWidth:0.5,
+            opacity: 0.3,
+            fill: '#04A1E9',
+            hasBorders: false,
+            hasControls: false
+        });
+        canvas.add(polygon);
+
+        activeShape = null;
+        polygonMode = false;
+        canvas.selection = true;
+    }
+};
+$('#xx').click(function() {
+	  editable = !editable;
+     /* console.log(JSON.stringify(canvas));
+      canvas.clear();
+      	var json = {"version":"4.2.0","objects":[{"type":"polygon","version":"4.2.0","originX":"left","originY":"top","left":330.5,"top":190.5,"width":781,"height":217,"fill":"#cccccc","stroke":"#333333","strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":0.3,"shadow":null,"visible":true,"backgroundColor":"","fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"points":[{"x":331.00283382149536,"y":236.0028518855326},{"x":727.0028252384268,"y":191.00284980912335},{"x":1112.0028168937768,"y":201.0028502705476},{"x":1013.002819039544,"y":386.00285880689677},{"x":347.00283360475123,"y":408.00286000659986},{"x":538.0028294649378,"y":298.0028549309328},{"x":668.0028266472638,"y":266.00285345437516}]},{"type":"polygon","version":"4.2.0","originX":"left","originY":"top","left":330.75,"top":190.75,"width":781,"height":217,"fill":"red","stroke":"#333333","strokeWidth":0.5,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"backgroundColor":"","fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"points":[{"x":331.00283382149536,"y":236.0028518855326},{"x":727.0028252384268,"y":191.00284980912335},{"x":1112.0028168937768,"y":201.0028502705476},{"x":1013.002819039544,"y":386.00285880689677},{"x":347.00283360475123,"y":408.00286000659986},{"x":538.0028294649378,"y":298.0028549309328},{"x":668.0028266472638,"y":266.00285345437516}]}],"backgroundImage":{"type":"image","version":"4.2.0","originX":"left","originY":"top","left":0,"top":0,"width":1600,"height":900,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"backgroundColor":"","fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"cropX":0,"cropY":0,"src":"file:///F:/desktop/1.jpg","crossOrigin":null,"filters":[]}};
+		canvas.loadFromJSON(json, canvas.renderAll.bind(canvas));*/
+
+    });
+</script>
+</html>

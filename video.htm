@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<@sp.themes/>
+	<style>
+		.el-collapse-item__header{
+			color:#ffffff;
+			background:#2F9688;
+			padding:0 10px;
+			box-sizing:border-box;
+			border:none;
+		}
+		.el-collapse-item__wrap{
+			background:#000000;
+			border:none;
+		}
+		.bgBlack{
+			background:#000000!important;
+		}
+		.colorWhite{
+			color:#ffffff;
+		}
+		.vatv{
+			color:#2F9688;
+		}
+		.vedioBox{
+		  display:inline-block;
+		  background:#000000;
+		  float:left;
+		  border:1px solid #2BCDBC;
+		  box-sizing:border-box; 
+		}
+		.sets{
+			position:fixed;
+			bottom:0;
+			left:0;
+			height:40px;
+			line-height:40px;
+			text-align:right;
+			z-index:2;
+			background: #EDEDED;
+			padding-right:20px;
+		}
+		.sets i{
+			font-size:20px;
+			margin-left:15px;
+		}
+		.topLayOut{
+			position:fixed;
+			bottom:50px;
+			width:160px;
+			height:120px;
+			background:#333333;
+			padding:20px;
+			box-sizing:border-box;
+			border-radius:5px;
+		}
+		.topBox{
+			width:40px;
+			height:40px;
+			float:left;
+		}
+		.topBox img{
+			width:35px;
+			height:35px;
+			object-fit:contain;
+		}
+		.lauoutClose{
+			position:absolute;
+			top:2px;
+			right:2px;
+		}
+		.vedioBox{
+			position:relative;
+		}
+		.videoAct{
+		    border-style: dashed;
+   			border-color: yellow;
+		}
+		.vedioBox:hover .video-sets{
+			display:block;
+		}
+		.video-sets{
+		    display:none;
+			position:absolute;
+			bottom:0;
+			right:0;
+			left:0;
+			height:40px;
+			text-align:center;
+			box-sizing:border-box;
+			background:#000000;
+			line-height:40px;
+		}
+		.video-setdetails{
+			position:absolute;
+			bottom:0;
+			right:0;
+			width:140px;
+			height:40px;
+			background:transparent;
+			line-height:40px;
+			color:#ffffff;
+		}
+		.el-icon-zoom-in{
+			position:absolute;
+			left:-13px;
+			bottom:10px;
+		}
+		.el-icon-zoom-out{
+			position:absolute;
+			right:0;
+			bottom:10px;
+		}
+		.video-setdetails i{
+			font-size:20px;
+			margin-left:15px;
+			color:#ffffff;
+		}
+		.video-sets i{
+			font-size:20px;
+			margin-left:15px;
+			color:#ffffff;
+		}
+		.fuckcanvas{
+			position:absolute;
+			bottom:0;
+			right:20px;
+			height:100px;
+			width:100px;
+			background:#000000;
+			color:#ffffff;
+			border-radius:50%;
+		}
+		.canvastop{
+			position:absolute;
+			bottom:10px;
+			right:10px;
+			height:80px;
+			width:80px;
+			color:#ffffff;
+			border-radius:50%;
+		}
+		.canvastop i{
+			font-size:30px;
+		}
+		.canvastop .el-icon-caret-top{
+			position:absolute;
+			top:0;
+			right:50%;
+			margin-right:-15px;
+		}
+		.canvastop .el-icon-caret-right{
+			position:absolute;
+			top:50%;
+			right:0;
+			margin-top:-15px;
+		}
+		.canvastop .el-icon-caret-bottom{
+			position:absolute;
+			bottom:0;
+			left:50%;
+			margin-left:-15px;
+		}
+		.canvastop .el-icon-caret-left{
+			position:absolute;
+			left:-15px;
+			top:50%;
+			margin-top:-15px;
+		}
+		.canvastop .el-icon-refresh-right{
+			position:absolute;
+			left:50%;
+			top:50%;
+			margin-top:-15px;
+			margin-left:-15px;
+		}
+		.el-collapse,.el-collapse-item{
+			width:200px;
+		}
+		body{
+		    -moz-user-select:none; /*火狐*/
+		    -webkit-user-select:none; /*webkit浏览器*/
+		    -ms-user-select:none; /*IE10*/
+		    -khtml-user-select:none; /*早期浏览器*/
+		    user-select:none;
+		}
+	</style>
+	<link href="<@sp.static/>/moltran/assets/css/newbase.css" rel="stylesheet" type="text/css">
+</head>
+<body class="bgBlack">
+	<div class="flex h100" id="app">
+		<div class="menuSide h100 bgBlack">
+			<el-collapse class="h100" style="overflow-y:auto" v-model="activeNames" @change="handleChange">
+			  <el-collapse-item title="实时预览" name="1">
+			    <div 
+			    v-cloak
+			    v-for="(item,index) in videoslist" 
+			    class="oneTxt p10 colorWhite pointer dragStart" 
+			    @click="clickV(item)"
+			    @dblclick="setShowVideo(item)"
+			    :id="item.id"
+			    :class="item.id == currentId?'vatv':''"
+			    :key="index">
+			    	{{item.name}}
+			    </div>
+			  </el-collapse-item>
+			 
+			</el-collapse>
+			<div style="height:42px;"></div>
+		</div>
+		<div class="flex1" >
+			<div :style="{'height':maxHeight+'px','overflow-y':'auto'}">
+				<div
+				v-show="!doubleShow"
+				class="vedioBox pointer draggEnd"
+				:class="[activeIndex == index?'videoAct':'']"
+				:style="{
+					'height':myStylelist[showIndex-1][index].height+'px',
+					'width':myStylelist[showIndex-1][index].width+'px'
+				}"
+				v-for="(item,index) in showlist.slice(0,showIndex)" 
+				:key="index"
+				@dblclick.prevent="setdoubleShow(item)"
+				@click.prevent="clickactiveIndex(index)"
+				@mouseleave="setsIndex(-1)"
+				:id="'vBox'+index"
+				:data-id="index"
+				>
+					<video :id="'myVideo'+index"   style="width:100%;height:100%;"  autoplay muted ></video>
+					
+					<div class="video-sets" v-show="showlist[index] && showlist[index].url" @dblclick.prevent.stop="dblfuck">
+						<i class="el-icon-download pointer"></i>
+						<i class="el-icon-camera pointer" @click.stop="saveAsPNG('myVideo'+index,item.label)"></i>
+						<i class="el-icon-s-help pointer"  @click.stop="setsIndex(index)"></i>
+					</div>
+					
+					<div class="video-setdetails" v-show="showlist[index] && showlist[index].url && setIndex == index" @dblclick.prevent.stop="dblfuck">
+						<i class="el-icon-zoom-in pointer"></i>
+						<div class="fuckcanvas">
+							<canvas  
+							:id="'canvasId'+index"
+							 width="100" 
+							 height="100"
+							 @mousedown.stop.prevent="canvasmousedown"
+							 @mousemove.stop.prevent="canvasmousemove"
+							 @mouseup.stop.prevent="canvasmouseup"
+							 >
+							 </canvas>
+							 <div class="canvastop">
+							 	<i class="el-icon-caret-top"></i>
+							 	<i class="el-icon-caret-right"></i>
+							 	<i class="el-icon-refresh-right"></i>
+							 	<i class="el-icon-caret-bottom"></i>
+							 	<i class="el-icon-caret-left"></i>
+							 </div>
+						</div>
+						<i class="el-icon-zoom-out pointer" ></i>
+					</div>
+					
+					
+				</div>
+				
+				
+				<div
+				v-show="doubleShow"
+				class="vedioBox pointer"
+				:style="{
+					'height':myStylelist[0][0].height+'px',
+					'width':myStylelist[0][0].width+'px'
+				}"
+				@dblclick="setdoubleShow"
+				>
+					<video id="myVideotemp" style="width:100%;height:100%;" autoplay muted ></video>
+					
+					<div class="video-sets"  @dblclick.prevent.stop="dblfuck">
+						<i class="el-icon-download pointer"></i>
+						<i class="el-icon-camera pointer" @click.stop="saveAsPNG('myVideotemp',doubleObj.label)"></i>
+						<i class="el-icon-s-help pointer"  @click.stop="setsIndex(9999)"></i>
+					</div>
+					
+					<div class="video-setdetails" v-show="setIndex == 9999" @dblclick.prevent.stop="dblfuck">
+						<i class="el-icon-zoom-in pointer"></i>
+						<div class="fuckcanvas">
+							<canvas  
+							id="canvasId9999"
+							 width="100" 
+							 height="100"
+							 @mousedown.stop.prevent="canvasmousedown"
+							 @mousemove.stop.prevent="canvasmousemove"
+							 @mouseup.stop.prevent="canvasmouseup"
+							 >
+							 </canvas>
+							 <div class="canvastop">
+							 	<i class="el-icon-caret-top"></i>
+							 	<i class="el-icon-caret-right"></i>
+							 	<i class="el-icon-refresh-right"></i>
+							 	<i class="el-icon-caret-bottom"></i>
+							 	<i class="el-icon-caret-left"></i>
+							 </div>
+						</div>
+						<i class="el-icon-zoom-out pointer" ></i>
+					</div>
+					
+				</div>
+				
+			</div>
+			
+			<canvas id="video2canvas" style="display: none"></canvas>
+			
+			<div class="topLayOut" v-show="setlayoutShow" :style="{'left':rightV-220+'px'}">
+			    <i class="el-icon-circle-close lauoutClose pointer" @click="setlauoutClose"></i>
+				<div v-for="i in 6" class="topBox pointer" @click="setshowIndex(i)">
+					<img  :src="'<@sp.static/>/moltran/assets/css/images/t'+i+'.png'">
+				</div>
+			</div>
+			<div class="sets" :style="{'width':100+'%'}">
+				<i class="el-icon-download pointer"></i>
+				<i class="el-icon-camera pointer" @click="downImgs"></i>
+				<i class="el-icon-menu pointer" @click="setLayOut"></i>
+			</div>
+			
+		</div>
+	</div>
+	
+
+</body>
+<script type="text/javascript">
+	var vm = new Vue({
+		 el:'#app',
+		 data() {
+		    return {
+		    	doubleShow:false,
+		    	doubleObj:null,
+		    	setlayoutShow:false,
+		    	activeIndex:-1,
+		    	setIndex:-1,
+		    	showIndex:4,
+		    	activeNames:'1',
+		    	currentId:'',
+		    	videoslist:[],
+		    	showlist:[
+		    		{},{},{},{},{},{},{},{},{}
+		    	],
+		    	page:{
+	    		  totalCount:0,
+	    		  pageSize:1000,
+	    		  pageOffset:1
+	    	    },
+		    	canvasIndex:-1,
+		    	tempCanvas:null,
+		    	moveFlag:false,
+		    	hd:0.5,
+		    	XYS:[],
+		    	initDrops:[],
+		    	flvPlayers:[],
+		    	Mheight:innerHeight -40,
+		    	Mwidth:innerWidth - 200,
+		    	maxHeight:$('.menuSide').height()
+		    }
+		  },
+		  mounted() {
+			this.getData();
+			this.Drag = dnd.Drag;
+		    this.Drop = dnd.Drop;
+			this.initShows();
+			this.initDrag();
+			this.initDrop();
+			this.initCanvas(0);
+			var that = this;
+			 document.body.onresize = function(){
+				that.Mheight = innerHeight -40;
+				that.maxHeight = $('.menuSide').height();
+				that.Mwidth = innerWidth - 200 -that.getScrollBarSize(1);
+			} 
+		  },
+		  computed:{
+			 rightV:function(){
+				return   200 + this.maxWidth;
+			 },
+			 maxWidth:function(){
+				 var maxWidth = innerWidth - 200;
+		  		 var leftHeight = $('.menuSide').height();
+		  		 var tempHeight = leftHeight*16/9;
+		  		 return Math.min(tempHeight,maxWidth)-80;
+			 },
+		  	 myStylelist:function(){
+		  		 var maxWidth = this.maxWidth;
+		  		 var height = this.Mheight;
+		  		 var width = this.Mwidth;
+		  		 return [
+		  			 [
+		  				 {'width':width,'height':height}
+		  			 ],
+		  			[
+		  				 {'width':Math.floor(width/2),'height':height},
+		  				 {'width':Math.floor(width/2),'height':height}
+		  			 ],
+		  			[
+		  				 {'width':width,'height':Math.floor(height*2/3)},
+		  				 {'width':width/2,'height':Math.floor(height*1/3)},
+		  				 {'width':width/2,'height':Math.floor(height*1/3)}
+		  			 ],
+		  			[
+		  				 {'width':width/2,'height':Math.floor(height*1/2)},
+		  				 {'width':width/2,'height':Math.floor(height*1/2)},
+		  				 {'width':width/2,'height':Math.floor(height*1/2)},
+		  				 {'width':width/2,'height':Math.floor(height*1/2)}
+		  			 ],
+		  			[
+		  				 {'width':width,'height':Math.floor(height*2/3)},
+		  				 {'width':width/4,'height':Math.floor(height*1/3)},
+		  				 {'width':width/4,'height':Math.floor(height*1/3)},
+		  				 {'width':width/4,'height':Math.floor(height*1/3)},
+		  				 {'width':width/4,'height':Math.floor(height*1/3)}
+		  			 ],
+		  			[
+		  				 {'width':width*2/3,'height':Math.floor(height*2/3)},
+		  				 {'width':width*1/3,'height':Math.floor(height*1/3)},
+		  				{'width':width*1/3,'height':Math.floor(height*1/3)},
+		  				{'width':width*1/3,'height':Math.floor(height*1/3)},
+		  				{'width':width*1/3,'height':Math.floor(height*1/3)},
+		  				{'width':width*1/3,'height':Math.floor(height*1/3)}
+		  			 ],
+		  			[
+		  				 {'width':maxWidth*1/2,'height':maxWidth*9/16*1/2},
+		  				 {'width':maxWidth*1/2,'height':maxWidth*9/16*1/2},
+		  				 {'width':maxWidth*1/2,'height':maxWidth*9/16*1/2},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4}
+		  			 ],
+		  			[
+		  				 {'width':maxWidth*3/4,'height':Math.floor(maxWidth*9/16*3/4)},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4},
+		  				 {'width':maxWidth*1/4,'height':maxWidth*9/16*1/4}
+		  			 ],
+		  			[
+		  				 {'width':maxWidth*1/3,'height':maxWidth*9/16*1/3},
+		  				 {'width':maxWidth*1/3,'height':maxWidth*9/16*1/3},
+		  				 {'width':maxWidth*1/3,'height':maxWidth*9/16*1/3},
+		  				 {'width':maxWidth*1/3,'height':maxWidth*9/16*1/3},
+		  				 {'width':maxWidth*1/3,'height':maxWidth*9/16*1/3},
+		  				 {'width':maxWidth*1/3,'height':maxWidth*9/16*1/3},
+		  				 {'width':maxWidth*1/3,'height':maxWidth*9/16*1/3},
+		  				 {'width':maxWidth*1/3,'height':maxWidth*9/16*1/3},
+		  				 {'width':maxWidth*1/3,'height':maxWidth*9/16*1/3}
+		  			 ]
+		  		 ];
+		  	 }
+		  },
+		  methods: {
+			  getData:function(){
+	    		var that = this;
+	    		var url = '${rc.contextPath}/bg/bwssEquipMaintent.html?method=load'; 
+	    		var datas = {
+	    				equipmentType:3,
+	    				pageOffset: this.page.pageOffset,
+	    				pageSize: this.page.pageSize
+	    		}
+	    		com_ajaxPost(url, datas, null,function(res) {
+						if(res){
+							that.videoslist = res.rows;
+						}
+					},null,true);
+	    	},
+			  getScrollBarSize:function(fresh){
+					//fresh 是否重新获取, cached: 是否获取过
+					if(fresh || cahced===undefined) {
+						const inner = document.createElement('div');
+						inner.style.width = '100%';
+						inner.style.height = '200px';
+
+						const outer = document.createElement('div');
+						outer.style.position = 'absolute';
+						outer.style.top =  0;
+						outer.style.left = 0;
+						outer.style.visibility = 'hidden';
+						outer.style.width = '200px';
+						outer.style.height = '150px'; //父元素高度比内部元素高度小
+						outer.style.overflow = 'hidden';
+						outer.appendChild(inner);
+					
+						document.body.appendChild(outer);
+						
+						const widthContained = inner.offsetWidth;
+						outer.style.overflow = 'scroll'; //让滚动条显示出来
+						let widthScroll = inner.offsetWidth; //offsetWidth: content+padding+border
+						
+						if(widthContained === widthScroll){
+							widthScroll = outer.clientWidth; //clientWidth： content + padding
+						}
+						document.body.removeChild(outer);
+						cached = widthContained - widthScroll
+					}
+					return cached;
+				},
+			  dblfuck:function(){
+				  return false;
+			  },
+			  setsIndex:function(index){
+				  if(this.setIndex == index){
+					  this.setIndex = -1;
+				  }else{
+					  this.setIndex = index;
+				  }
+				  
+			  },
+			  getXY:function(e,obj) {
+				  	var obj2 = document.getElementById("canvasId"+this.canvasIndex).getBoundingClientRect();
+				  	obj = Object.assign(obj,obj2);
+			        var et = e.touches? e.touches[0] : e;
+			        var x = et.clientX;
+			        var y = et.clientY;
+			        return {
+			            x : x - obj.offsetLeft + (document.body.scrollLeft || document.documentElement.scrollLeft),
+			            y : y - obj.offsetTop  + (document.body.scrollTop || document.documentElement.scrollTop)
+			        }
+			   },
+			   offset:function(r,d) {//根据弧度与距离计算偏移坐标
+			        return {x: -Math.sin(r)*d, y: Math.cos(r)*d};
+			   },
+			  canvasmousedown:function(e){
+				  this.moveFlag = true;
+			  },
+			  canvasmousemove:function(e){
+				  var ox = 50;
+				  var oy = 50;
+				  var or = 45;
+				  var br = 10;
+				  if (this.moveFlag) {
+			            var k = this.getXY(e,this.tempCanvas);
+			            var tempObj = document.getElementById("canvasId"+this.canvasIndex).getBoundingClientRect();
+			            var r = Math.atan2(k.x-ox-tempObj.x, tempObj.y+oy-k.y);
+			            this.hd = (Math.PI+r)/(2*Math.PI);
+						console.log(this.hd)
+			            // 半圆的滑动范围判断
+			            /* if (this.hd <= 0.75 && this.hd >= 0.25) {
+			                this.draw(this.hd);
+			            } */
+			            this.draw(this.hd);
+			        }
+				  
+			  },
+			  canvasmouseup:function(e){
+				  this.moveFlag = false;
+			  },
+			  draw:function(n) {
+			    	var ctx = this.tempCanvas.getContext("2d");
+			    	var ox = 50;
+					var oy = 50;
+					var or = 45;
+					var br = 10;
+			        ctx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
+			        ctx.strokeStyle = "#f1f1f1";
+			        ctx.lineWidth = 10;
+			        ctx.beginPath();
+			        ctx.arc(ox,oy,or,0,2*Math.PI,true);
+			        ctx.stroke();
+			        ctx.strokeStyle = "#69f";
+			        ctx.lineWidth = 10;
+			        /* var ring = ctx.createLinearGradient(0,60,60,0);
+		            ring.addColorStop("0",'#0000ff');
+		            ring.addColorStop("1.0",'#ff0000');
+		            ctx.strokeStyle = ring; */
+		            
+			        ctx.beginPath();
+			        ctx.arc(ox,oy,or,0.5*Math.PI,(n*2+0.5)*Math.PI,false);
+			        ctx.stroke();
+			        ctx.beginPath();
+			  },
+			  initCanvas:function(Index){
+				  var that = this;
+				  this.canvasIndex = Index;
+				  this.tempCanvas = document.getElementById("canvasId"+Index);
+				  this.moveFlag = false;
+				  this.draw(this.hd);
+			  },
+			  initShows:function(){
+				 var that = this;
+				 this.showlist.slice(0,this.showIndex).forEach(function(item,index){
+					 if(item && item.url){
+						 that.startPlay('myVideo'+index,item.url)
+					 }
+				 })
+			  },
+			  setShowVideo:function(obj){
+				  if(this.activeIndex == -1){
+					  this.$message.error('请先选择视频模块!');
+					  return;
+				  }
+				  
+				  /* this.flvPlayers.forEach(function(item,index){
+					  if(item && item.id == ('myVideo'+this.activeIndex) && item.flvPlayer){
+						 item.flvPlayer.pause()
+		    		     item.flvPlayer.unload()
+		    		     item.flvPlayer.detachMediaElement()
+		    		     item.flvPlayer.destroy()
+		    		     item.flvPlayer = null
+					  } 	
+			    	}); */
+				  
+				  
+				  this.showlist[this.activeIndex] = obj;
+				  this.startPlay('myVideo'+this.activeIndex,obj.url)
+			  },
+			  clickactiveIndex:function(index){
+				  this.activeIndex = index;
+			  },
+			  initDrop:function(){
+				  var that = this;
+				  for(var i = 0; i < this.showIndex; i++){
+					  this.initDrops.push(new dnd.Drop('#vBox'+i,{
+						  name:'vBox'+i,
+						  onDragStart: function (params) {
+					      },
+					      onDragEnter: function (params) {	
+					      },
+					      onDragLeave: function (params) { 	
+					      },
+					      onDragEnd: function (params) {	
+					      },
+						  onDrop: function (params) {
+								console.log('********end5*********')
+					            console.log(params)
+					            var Index = params.el.dataset.id;
+					            that.showlist[Index] = params.data;
+					    	    that.startPlay('myVideo'+Index,params.data.url)
+					            console.log('********end5*********')
+					          }
+						 }))
+				  }
+				
+				  
+			  },
+			  initDrag:function(){
+				 var that = this;
+				 this.videoslist.forEach(function(item,index){
+					 new dnd.Drag(document.getElementById(item.id),{
+						 data:item,
+						 onDragStart: function (params) {
+				            console.log(params)
+				          },
+						 onDragEnd: function (params) {
+				            console.log(params)
+				          }
+					 })
+				 }) 
+			  },
+			  downImgs:function(){
+				  this.saveAsPNG('myVideo0','抓拍');
+			  },
+			  downLoadImg:function(url,name){
+			  	var oA = document.createElement("a");
+			    oA.download = name?name:'';// 设置下载的文件名，默认是'下载'
+			    oA.href = url;
+			    document.body.appendChild(oA);
+			    oA.click();
+			    oA.remove(); 
+			  },
+			  saveAsPNG:function(ID,NAME){
+				var canvas = document.getElementById('video2canvas');
+		        if (!canvas.getContext) {
+		            alert("您的浏览器暂不支持canvas");
+		            return false;
+		        } else {
+		            var context = canvas.getContext("2d");
+		            var video = document.getElementById(ID);
+		            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+		            this.downLoadImg(canvas.toDataURL("image/png"),NAME);
+		        } 
+			  },
+			  setdoubleShow:function(item){
+				  this.doubleShow = !this.doubleShow;
+				  if(this.doubleShow){
+					  this.doubleObj = item;
+					  this.initCanvas(9999);
+					  this.startPlay('myVideotemp',item.url)
+				  }
+			  },
+			  startPlay(ID,URL) {
+				  var that = this;
+			      if (flvjs.isSupported()) {
+			    	this.flvPlayers.forEach(function(item,index){
+			    		if(item.id == ID && item && item.flvPlayer){
+			    			 item.flvPlayer.pause()
+			    		     item.flvPlayer.unload()
+			    		     item.flvPlayer.detachMediaElement()
+			    		     item.flvPlayer.destroy()
+			    		     item.flvPlayer = null
+			    		}
+			    	});
+			        const videoElement = document.getElementById(ID);
+			        const flvPlayer = flvjs.createPlayer(
+			          {
+			            type: "flv",
+			            isLive: true,
+			            hasAudio: false,
+			            url: URL?URL:"http://192.168.0.132:8084/live?port=1935&app=myapp&stream=test"
+			          },
+			          {
+			            enableStashBuffer: true,
+			            stashInitialSize: 128
+			          }
+			        );
+			        flvPlayer.attachMediaElement(videoElement)
+			        flvPlayer.load()
+			        flvPlayer.play();
+			        this.flvPlayers.push({
+			        	'id':ID,
+			        	'flvPlayer':flvPlayer
+			        })
+			      } else {
+			        console.log("flvjs不支持")
+			      }
+			    },
+			  setlauoutClose:function(){
+				  this.setlayoutShow = false; 
+			  },
+			  setshowIndex:function(index){
+				  var tempIndex  = this.showIndex;
+				  var that = this;
+				  this.showIndex = index;
+				  
+				  for(var i = 0; i < tempIndex; i++){
+					  this.initDrops[i].methods.destroyDrop('vBox'+i);
+				  }
+				  if(tempIndex > index){
+					  this.flvPlayers.slice(index,tempIndex+1).forEach(function(item,index){
+						  if(item && item.flvPlayer){
+							 item.flvPlayer.pause()
+			    		     item.flvPlayer.unload()
+			    		     item.flvPlayer.detachMediaElement()
+			    		     item.flvPlayer.destroy()
+			    		     item.flvPlayer = null
+						  }
+						  	
+				    	});
+				  }
+				  
+				  
+				  
+				  
+				  this.$nextTick(function(){
+					  that.initDrop();
+				  })
+				  
+				  /* var that = this;
+					this.showlist.slice(0,this.showIndex).forEach(function(item,index){
+					 if(tempIndex < index){
+					 	that.startPlay('myVideo'+index,item.url)
+					 }
+					}) */
+				  
+				  
+			  },
+			  setLayOut:function(){
+					this.setlayoutShow = !this.setlayoutShow; 
+			  },
+			  handleChange:function(e){
+				  
+			  },
+			  clickV:function(item){
+				  this.currentId = item.id
+			  }
+		  }
+		  
+	})
+</script>
+</html>
